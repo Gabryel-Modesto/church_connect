@@ -1,0 +1,115 @@
+DROP DATABASE IF EXISTS church_connect;
+CREATE DATABASE church_connect;
+USE church_connect;
+
+CREATE TABLE churches (
+	id_church INT PRIMARY KEY AUTO_INCREMENT,
+    name_church VARCHAR(255) NOT NULL,
+	address_church VARCHAR(255),
+    email_church VARCHAR(100)
+);
+
+CREATE TABLE roles (
+	id_roles INT PRIMARY KEY AUTO_INCREMENT,
+    name_role VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE departments (
+	id_department INT PRIMARY KEY AUTO_INCREMENT,
+    name_department VARCHAR(50) NOT NULL,
+    description_department VARCHAR(255),
+    church_id INT,
+    FOREIGN KEY (church_id) REFERENCES churches(id_church)
+)  ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE users (
+	id_user INT PRIMARY KEY AUTO_INCREMENT,
+    name_user VARCHAR(255) NOT NULL,
+    email_user VARCHAR(255) NOT NULL UNIQUE,
+    cpf_user VARCHAR(30),
+	gender_users ENUM('masculino', 'feminino'),
+    marital_status_user ENUM('solteiro', 'casado', 'divorciado', 'viúvo') DEFAULT 'solteiro',
+    birthdate_user DATE,
+    phone_number_user VARCHAR(25),
+    status_user ENUM('ativo', 'inativo') DEFAULT 'ativo',
+    authorization_image ENUM('sim', 'não') DEFAULT 'não',
+    authorization_signature_path VARCHAR(255),
+    profile_photo VARCHAR(255),
+    created_at_user DATE,
+    churches_id_church INT,
+    address_id_address INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (churches_id_church) REFERENCES churches(id_church)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE addresses  (
+	id_address INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT,
+    street_addresses VARCHAR(255),
+    house_number_addresses VARCHAR(20),
+    complement_addresses VARCHAR(100),
+    neighborhood_addresses VARCHAR(100),
+    city_addresses VARCHAR(100),
+    state_addresses CHAR(2),
+    zip_code_addresses VARCHAR(20),
+    FOREIGN KEY (user_id) REFERENCES users(id_user) ON DELETE CASCADE
+)  ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+ALTER TABLE users ADD CONSTRAINT fk_users_address
+FOREIGN KEY (address_id_address) REFERENCES addresses(id_address);
+
+CREATE TABLE children (
+id_child INT PRIMARY KEY AUTO_INCREMENT,
+user_id INT,
+name_child VARCHAR(255),
+birthdate_child DATE,
+gender_child ENUM('masculino', 'feminino'),
+authorization_image ENUM('sim', 'não') DEFAULT 'não',
+authorization_signature_path VARCHAR(255),
+profile_photo VARCHAR(255),
+FOREIGN KEY (user_id) REFERENCES users(id_user) ON DELETE CASCADE
+)  ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE user_department_roles (
+	id_user_department_roles INT PRIMARY KEY AUTO_INCREMENT,
+    users_id_user INT,
+    roles_id_roles INT,
+    departments_id_departments INT,
+    FOREIGN KEY (users_id_user) REFERENCES users(id_user),
+    FOREIGN KEY (roles_id_roles) REFERENCES roles(id_roles),
+    FOREIGN KEY (departments_id_departments) REFERENCES departments(id_department)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE departments_roles (
+	id_departments_roles INT PRIMARY KEY AUTO_INCREMENT,
+    roles_id_roles INT,
+    departments_id_departments INT,
+	FOREIGN KEY (roles_id_roles) REFERENCES roles(id_roles),
+    FOREIGN KEY (departments_id_departments) REFERENCES departments(id_department)
+)  ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+INSERT INTO churches (name_church, address_church, email_church)
+VALUES
+('Ieadv São Pedro', 'Rodovia Serafim Derenzi, 4017', 'saopedro@ieadv.com.br');
+
+INSERT INTO roles(name_role)
+VALUES
+('Pastor Presidente'),
+('Pastor Local'),
+('Pastor'),
+('Evangelista'),
+('Presibitero'),
+('Professor'),
+('Líder'),
+('Zelador'), 
+('Midia'),
+('Musico'),
+('Vocal'),
+('Diacno'),
+('Cooperador'),
+('Secretaria'),
+('Sonoplasta');
+
+SELECT * FROM roles;
+SELECT * FROM churches;
