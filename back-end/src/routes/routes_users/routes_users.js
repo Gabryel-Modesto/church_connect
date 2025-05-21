@@ -1,24 +1,18 @@
-import express from 'express';
+import express from "express";
+import { conn } from "../../db.js";
+import { deleteUser, getHome, listUsers , registerUser, updateUser } from "../../controllers/userController.js";
 
 const app = express();
+const router = express.Router();
 
-app.get('/', (req, res) => {
-    res.send('Seja bem-vindo')
-});
+router.get("/", getHome);
 
-app.get('/users', (req, res) => {
-    res.send('Buscando usuário')
-})
+router.get("/users/", listUsers );
 
-app.post('/users/insertusers', (req, res) => {
-    res.send('Criando usuários')
-});
+router.post("/users/insertusers/", registerUser);
 
-app.put('/users/usersupdate:id_user', (req, res) => {
-    res.send('Editando usuário')
-});
+router.put("/users/usersupdate/:id_user", updateUser);
 
+router.delete("/users/deleteusers/:id_user", deleteUser);
 
-app.delete('/users/deleteusers:id_user', (req, res) => {
-    res.send('Deletando usuário')
-});
+export default router;
