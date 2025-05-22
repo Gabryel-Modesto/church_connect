@@ -1,8 +1,6 @@
 import express from "express";
-import { conn } from "../../db.js";
 import { deleteUser, getHome, listUsers , registerUser, updateUser } from "../../controllers/userController.js";
 
-const app = express();
 const router = express.Router();
 
 router.get("/", getHome);

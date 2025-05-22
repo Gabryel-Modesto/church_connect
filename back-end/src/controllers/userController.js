@@ -1,152 +1,100 @@
-export const getHome = (req, res) => {
-     res.send("Seja bem-vindo");
-}
+import {
+  validateUserStatus,
+  sanitizeUserData,
+  insertUser,
+  uploadUser,
+  getAllUsers,
+  getUser,
+  deleteUserById
+} from "../service/userService.js";
 
-export const listUsers  = (req, res) => {
-  const sql = `SELECT * FROM users`;
 
-  conn.query(sql, (err, results) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).json("Erro ao buscar dados");
-    }
-    res.status(200).json(results);
-  });
+export const Home = (req, res) => {
+  res.send("Seja bem-vindo");
 };
 
-export const registerUser = (req, res) => {
-  const {
-    name_user,
-    email_user,
-    cpf_user,
-    gender_user,
-    marital_status_user,
-    birthdate_user,
-    phone_number_user,
-    status_user,
-    authorization_image,
-    authorization_signature_path,
-    profile_photo,
-  } = req.body;
-
-  const validUserStatus = ["ativo", "inativo"];
-  if (!validUserStatus.includes(status_user)) {
-    return res.status(400).json({ message: "Invalid status" });
-  }
-
-  const sql = `INSERT INTO users (name_user,
-        email_user, 
-        cpf_user, 
-        gender_user,
-        marital_status_user, 
-        birthdate_user, 
-        phone_number_user, 
-        status_user, 
-        authorization_image, 
-        authorization_signature_path, 
-        profile_photo) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-
-  conn.query(
-    sql,
-    [
-      name_user,
-      email_user,
-      cpf_user,
-      gender_user,
-      marital_status_user,
-      birthdate_user,
-      phone_number_user,
-      status_user,
-      authorization_image,
-      authorization_signature_path,
-      profile_photo,
-    ],
-    (err) => {
-      if (err) {
-        console.log(err);
-        return res.status(500).send("Erro ao enviar dados");
-      }
-      res.status(201).json({ mensage: "Usuário cadastrado com sucesso!" });
-    }
-  );
+export const listAllUsers = async (req, res) => {
+    try {
+        const users = await getAllUsers();
+        res.status(200).json(users);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({message: 'Erro ao buscar usuários'});
+    };
 };
 
-export const updateUser = (req, res) => {
-  const id_user = parseInt(req.params.id_user);
-  const {
-    name_user,
-    email_user,
-    cpf_user,
-    gender_user,
-    marital_status_user,
-    birthdate_user,
-    phone_number_user,
-    status_user,
-    authorization_image,
-    authorization_signature_path,
-    profile_photo,
-  } = req.body;
+export const listOneUser = async (req, res) => {
+   try {
+        const id_user = parseInt(req.params.id_user);
 
-  const sql = `UPDATE users SET name_user = COALESCE(?, name_user),
-        email_user = COALESCE(?, email_user), 
-        cpf_user = COALESCE(?, cpf_user), 
-        gender_user = COALESCE(?, gender_user),
-        marital_status_user = COALESCE(?, marital_status_user), 
-        birthdate_user = COALESCE(?, birthdate_user), 
-        phone_number_user = COALESCE(?, phone_number_user), 
-        status_user = COALESCE(?, status_user ), 
-        authorization_image = COALESCE(?, authorization_image), 
-        authorization_signature_path = COALESCE(?, authorization_signature_path), 
-        profile_photo = COALESCE(?, profile_photo)
-        WHERE id_user = ?`;
+        if(isNaN(id_user)) {
+            return res.status(400).json({message: 'ID inválido'});
+        };
 
-  conn.query(
-    sql,
-    [
-      name_user,
-      email_user,
-      cpf_user,
-      gender_user,
-      marital_status_user,
-      birthdate_user,
-      phone_number_user,
-      status_user,
-      authorization_image,
-      authorization_signature_path,
-      profile_photo,
-      id_user,
-    ],
-    (err, results) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ mensage: "Erro ao atualizar usuário" });
-      }
+        const user = await getUser(id_user);
 
-      if (results.affectedRows === 0) {
-        return res.status(400).json({ mensage: "Usuário não encontrado" });
-      }
-
-      res.status(200).json({ mensage: "Usuário atualizado com sucesso!" });
-    }
-  );
+        if(!user) {
+            return res.status(404).json({message: 'Usuário não encontrado'});
+        }
+        res.status(200).json(user)
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({message: 'Erro ao buscar usuário'});
+    };
 };
 
-export const deleteUser = (req, res) => {
-  const id_user = parseInt(req.params.id_user);
+export const registerUser = async (req, res) => {
+  try {
+    const userData = sanitizeUserData(req.body);
 
-  const sql = `DELETE FROM users  WHERE id_user = ?`;
+    if (!validateUserStatus(userData.status_user)) {
+      return res.status(400).json({message: 'Valor Inválido'});
+    };
 
-  conn.query(sql, [id_user], (err, results) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({ mensage: "Erro ao deletar usuário" });
+    await insertUser(userData);
+
+    res.status(201).json({message: 'Usuário cadastrado com sucesso!'});
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({message: 'Erro interno no servidor'});
+  };
+};
+
+export const updateUser =  async (req, res) => {
+  try {
+    const id_user = parseInt(req.params.id_user);
+    const userData = sanitizeUserData(req.body);
+    userData.id_user = id_user;
+
+    if (!validateUserStatus(userData.status_user)) {
+      return res.status(400).json({ message: 'Valor Inválido' });
+    };
+
+    await uploadUser(userData);
+
+    res.status(200).json({message: 'Usuário atualizado com sucesso!'})
+  } catch (error) {
+    console.error(error)
+    return res.status(500).json({message: 'Erro interno no servidor'});
+  };
+};
+
+export const deleteUser = async (req, res) => {
+  try {
+    const id_user = parseInt(req.params.id_user);
+    if(isNaN(id_user)) {
+        return res.status(400).json({message: 'ID inválido'});
+    };
+
+    const results = await deleteUserById(id_user);
+
+    if(results.affectedRows === 0) {
+        return res.status(404).json({message: 'Usuário não encontrado'});
     }
-
-    if (results.affectedRows === 0) {
-      return res.status(400).json({ mensage: "Usuário não encontrado" });
-    }
-
-    res.status(200).json({ mensage: "Usuário deletado com sucesso!" });
-  });
+    
+    res.status(200).json({message: 'Usuário deletado!'})
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({message: 'Erro ao deletar usuário'});
+  };
 };
