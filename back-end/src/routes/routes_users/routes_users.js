@@ -1,11 +1,13 @@
 import express from "express";
-import { deleteUser, getHome, listUsers , registerUser, updateUser } from "../../controllers/userController.js";
+import { deleteUser, Home, listAllUsers , registerUser, updateUser, listOneUser } from "../../controllers/userController.js";
 
 const router = express.Router();
 
-router.get("/", getHome);
+router.get("/", Home);
 
-router.get("/users/", listUsers );
+router.get("/users/", listAllUsers );
+
+router.get('/users/:id_user', listOneUser)
 
 router.post("/users/insertusers/", registerUser);
 
