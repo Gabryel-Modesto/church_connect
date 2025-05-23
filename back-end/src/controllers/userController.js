@@ -8,11 +8,6 @@ import {
   deleteUserById
 } from "../service/userService.js";
 
-
-export const Home = (req, res) => {
-  res.send("Seja bem-vindo");
-};
-
 export const listAllUsers = async (req, res) => {
     try {
         const users = await getAllUsers();
@@ -26,12 +21,11 @@ export const listAllUsers = async (req, res) => {
 export const listOneUser = async (req, res) => {
    try {
         const id_user = parseInt(req.params.id_user);
+        const user = await getUser(id_user);
 
         if(isNaN(id_user)) {
             return res.status(400).json({message: 'ID inválido'});
         };
-
-        const user = await getUser(id_user);
 
         if(!user) {
             return res.status(404).json({message: 'Usuário não encontrado'});
@@ -47,7 +41,7 @@ export const registerUser = async (req, res) => {
   try {
     const userData = sanitizeUserData(req.body);
 
-    if (!validateUserStatus(userData.status_user)) {
+    if(!validateUserStatus(userData.status_user)) {
       return res.status(400).json({message: 'Valor Inválido'});
     };
 
@@ -66,7 +60,7 @@ export const updateUser =  async (req, res) => {
     const userData = sanitizeUserData(req.body);
     userData.id_user = id_user;
 
-    if (!validateUserStatus(userData.status_user)) {
+    if(!validateUserStatus(userData.status_user)) {
       return res.status(400).json({ message: 'Valor Inválido' });
     };
 

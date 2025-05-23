@@ -1,4 +1,4 @@
-import pool from "../config/dbConnect";
+import pool from "../config/dbConnect.js";
 
 export function validateUserStatus(status) {
   const validUserStatus = ["ativo", "inativo"];
@@ -26,23 +26,23 @@ export function sanitizeUserData(userData) {
 export async function getAllUsers() {
   try {
     const [rows] = await pool.query(`SELECT * FROM users`);
-    return rows;  
+    return rows;
   } catch (error) {
-    throw error;  
+    throw error;
   }
 }
 
-export async function  getUser(id_user) {
-   try {
-    const [rows] = await pool.query(
-        `SELECT * FROM users WHERE id_user = ?`, [id_user]
-    );
+export async function getUser(id_user) {
+  try {
+    const [rows] = await pool.query(`SELECT * FROM users WHERE id_user = ?`, [
+      id_user,
+    ]);
 
     return rows[0] || null;
-   } catch (error) {
+  } catch (error) {
     throw error;
-   };
-};
+  }
+}
 
 export async function insertUser(userData) {
   const sql = `INSERT INTO users (
@@ -76,11 +76,10 @@ export async function insertUser(userData) {
   ];
 
   await pool.execute(sql, values);
-};
+}
 
 export async function uploadUser(userData) {
-  const sql =
-   `UPDATE users SET name_user = COALESCE(?, name_user),
+  const sql = `UPDATE users SET name_user = COALESCE(?, name_user),
     email_user = COALESCE(?, email_user), 
     cpf_user = COALESCE(?, cpf_user), 
     gender_user = COALESCE(?, gender_user),
@@ -94,7 +93,7 @@ export async function uploadUser(userData) {
     profile_photo = COALESCE(?, profile_photo)
     WHERE id_user = ?`;
 
-    const values = [
+  const values = [
     userData.name_user,
     userData.email_user,
     userData.cpf_user,
@@ -107,13 +106,15 @@ export async function uploadUser(userData) {
     userData.authorization_image,
     userData.authorization_signature_path,
     userData.profile_photo,
-    userData.id_user
-    ];
+    userData.id_user,
+  ];
 
-    await pool.execute(sql, values);
-};
+  await pool.execute(sql, values);
+}
 
 export async function deleteUserById(id_user) {
-   const [results] = await pool.query(`DELETE FROM users WHERE id_user = ?`, [id_user]);
-   return results;
-};
+  const [results] = await pool.query(`DELETE FROM users WHERE id_user = ?`, [
+    id_user,
+  ]);
+  return results;
+}
