@@ -4,7 +4,7 @@ import {
     getChurch, 
     insertChurch, 
     sanitizeChurchData, 
-    modifyChurch } from "../service/churchService"
+    modifyChurch } from "../service/churchService.js"
 
 export const listAllChurches = async(req, res) => {
     try {

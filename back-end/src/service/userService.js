@@ -34,11 +34,6 @@ export async function getAllUsers() {
 };
 
 export async function getUser(id_user) {
-
-  if (!id_user || isNaN(Number(id_user))) {
-    throw new Error('ID inválido');
-  }
-
   try {
     const [rows] = await pool.query(`SELECT * FROM users WHERE id_user = ?`, [
       id_user,
@@ -92,10 +87,6 @@ export async function insertUser(userData) {
 
 export async function modifyUser(id_user, userData) {
 
-  if (!id_user || isNaN(Number(id_user))) {
-    throw new Error('ID inválido');
-  }
-  
   const sql = `UPDATE users SET name_user = COALESCE(?, name_user),
     email_user = COALESCE(?, email_user), 
     cpf_user = COALESCE(?, cpf_user), 
@@ -136,11 +127,6 @@ export async function modifyUser(id_user, userData) {
 };
 
 export async function deleteUserById(id_user) {
-  if (!id_user || isNaN(Number(id_user))) {
-    throw new Error('ID inválido');
-  }
-  
-
   try {
     const [results] = await pool.query(`DELETE FROM users WHERE id_user = ?`, [id_user]);
     return results;
