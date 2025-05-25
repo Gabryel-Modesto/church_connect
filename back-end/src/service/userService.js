@@ -1,27 +1,28 @@
 import pool from "../config/dbConnect.js";
+import { parseDateOrNull } from "../utils/parseDateOrNull.js";
 
 export function validateUserStatus(status) {
   const validUserStatus = ["ativo", "inativo"];
   return validUserStatus.includes(status);
-}
+};
 
 export function sanitizeUserData(userData) {
   return {
     ...userData,
-    name_user: userData.name_user?.trim().toLowerCase(),
+    name_user: userData.name_user?.trim() || null,
     email_user: userData.email_user?.trim().toLowerCase(),
     cpf_user: userData.cpf_user?.replace(/\D/g, ""),
     gender_user: userData.gender_user?.trim().toLowerCase(),
     marital_status_user: userData.marital_status_user?.trim().toLowerCase(),
-    birthdate_user: userData.birthdate_user?.trim(),
-    marriage_date_user: userData.marriage_date_user?.trim() || null,
+    birthdate_user: parseDateOrNull(userData.birthdate_user),
+    marriage_date_user: parseDateOrNull(userData.marriage_date_user),
     phone_number_user: userData.phone_number_user?.replace(/\D/g, ""),
-    status_user: userData.status_user?.trim().toLowerCase(),
-    authorization_image: userData.authorization_image?.trim(),
-    authorization_signature_path: userData.authorization_signature_path?.trim(),
-    profile_photo: userData.profile_photo?.trim(),
+    status_user: validateUserStatus(userData.status_user?.trim().toLowerCase()) ? userData.status_user?.trim().toLowerCase() : 'inativo',
+    authorization_image: userData.authorization_image?.trim() || null ,
+    authorization_signature_path: userData.authorization_signature_path?.trim() || null,
+    profile_photo: userData.profile_photo?.trim() || null,
   };
-}
+};
 
 export async function getAllUsers() {
   try {
@@ -30,9 +31,14 @@ export async function getAllUsers() {
   } catch (error) {
     throw error;
   }
-}
+};
 
 export async function getUser(id_user) {
+
+  if (!id_user || isNaN(Number(id_user))) {
+    throw new Error('ID inválido');
+  }
+
   try {
     const [rows] = await pool.query(`SELECT * FROM users WHERE id_user = ?`, [
       id_user,
@@ -41,8 +47,8 @@ export async function getUser(id_user) {
     return rows[0] || null;
   } catch (error) {
     throw error;
-  }
-}
+  };
+};
 
 export async function insertUser(userData) {
   const sql = `INSERT INTO users (
@@ -75,10 +81,21 @@ export async function insertUser(userData) {
     userData.profile_photo,
   ];
 
-  await pool.execute(sql, values);
-}
+  try {
+    await pool.execute(sql, values);
+  } catch (error) {
+    console.error('Erro ao inserir usuário', error)
+    throw error;    
+  };
 
-export async function uploadUser(userData) {
+};
+
+export async function modifyUser(id_user, userData) {
+
+  if (!id_user || isNaN(Number(id_user))) {
+    throw new Error('ID inválido');
+  }
+  
   const sql = `UPDATE users SET name_user = COALESCE(?, name_user),
     email_user = COALESCE(?, email_user), 
     cpf_user = COALESCE(?, cpf_user), 
@@ -106,15 +123,30 @@ export async function uploadUser(userData) {
     userData.authorization_image,
     userData.authorization_signature_path,
     userData.profile_photo,
-    userData.id_user,
+    id_user,
   ];
 
-  await pool.execute(sql, values);
-}
+  try {
+    await pool.execute(sql, values);
+  } catch (error) {
+    console.error('Erro ao atualizar o usuário', error);
+    throw error;
+    
+  }
+};
 
 export async function deleteUserById(id_user) {
-  const [results] = await pool.query(`DELETE FROM users WHERE id_user = ?`, [
-    id_user,
-  ]);
-  return results;
-}
+  if (!id_user || isNaN(Number(id_user))) {
+    throw new Error('ID inválido');
+  }
+  
+
+  try {
+    const [results] = await pool.query(`DELETE FROM users WHERE id_user = ?`, [id_user]);
+    return results;
+  } catch (error) {
+    console.error('Erro ao deletar o usuário', error);
+    throw error;
+  }
+
+};

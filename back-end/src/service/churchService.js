@@ -1,15 +1,29 @@
 import pool from "../config/dbConnect.js";
 
+export function sanitizeChurchData(churchData) {
+  return {
+    ...churchData,
+    name_church: churchData.name_church?.trim().toLowerCase(),
+    address_church: churchData.address_church?.trim().toLowerCase(),
+    email_church: churchData.email_church?.trim().toLowerCase(),
+    cnpj_church: churchData.cnpj_church?.replace(/\D/g, ""),
+  };
+};
+
 export async function getAllChurches() {
   try {
     const [rows] = await pool.query(`SELECT * FROM churches`);
     return rows;
   } catch (error) {
     throw error;
-  };
+  }
 };
 
-export async function getChurces(id_church) {
+export async function getChurch(id_church) {
+  if (!id_church || isNaN(Number(id_church))) {
+    throw new Error("ID inválido");
+  }
+
   try {
     const [rows] = await pool.query(
       `SELECT * FROM churches WHERE id_church = ?`,
@@ -18,10 +32,10 @@ export async function getChurces(id_church) {
     return rows[0] || null;
   } catch (error) {
     throw error;
-  };
+  }
 };
 
-export async function insertChurch(userData) {
+export async function insertChurch(churchData) {
   const sql = `INSERT INTO churches (
       name_church,
       address_church,
@@ -29,37 +43,57 @@ export async function insertChurch(userData) {
       cnpj_church,
     ) VALUES (?, ?, ?, ?)`;
 
-  const valeus = [
-    userData.name_church,
-    userData.address_church,
-    userData.email_church,
-    userData.cnpj_church
+  const values = [
+    churchData.name_church,
+    churchData.address_church,
+    churchData.email_church,
+    churchData.cnpj_church,
   ];
 
-  await pool.execute(sql, valeus);
+  try {
+    await pool.execute(sql, values);
+  } catch (error) {
+    console.error("Erro ao inserir igreja", error);
+    throw error;
+  }
 };
 
-export async function uploadChurch(userData) {
-  const sql = `UPLOAD churches SET name_church = COALESCE(?, name_church),
-    address_church = COALESCE(?, email_church),
+export async function modifyChurch(id_church, churchData) {
+  const sql = `UPDATE churches SET name_church = COALESCE(?, name_church),
+    address_church = COALESCE(?, address_church),
     email_church = COALESCE(?, email_church),
     cnpj_church = COALESCE(?, cnpj_church)
-    WHERE id_user = ?`;
+    WHERE id_church = ?`;
 
   const values = [
-    userData.name_church,
-    userData.address_church,
-    userData.email_church,
-    userData.cnpj_church
+    churchData.name_church,
+    churchData.address_church,
+    churchData.email_church,
+    churchData.cnpj_church,
+    id_church,
   ];
 
-  await pool.execute(sql, values);
+  try {
+    await pool.execute(sql, values);
+  } catch (error) {
+    console.error("Erro ao atualizar igreja", error);
+    throw error;
+  };
 };
 
 export async function deleteChurchById(id_church) {
-  const [results] = await pool.query(
-    `DELETE FROM churches WHERE id_church = ?`,
-    [id_church]
-  );
-  return results;
+  if (!id_church || isNaN(Number(id_church))) {
+    throw new Error("ID inválido");
+  }
+
+  try {
+    const [results] = await pool.query(
+      `DELETE FROM churches WHERE id_church = ?`,
+      [id_church]
+    );
+    return results;
+  } catch (error) {
+    console.error("Erro ao deletar igreja", error);
+    throw error;
+  };
 };
