@@ -29,6 +29,7 @@ export async function getAllUsers() {
     const [rows] = await pool.query(`SELECT * FROM users`);
     return rows;
   } catch (error) {
+    console.error('Erro ao buscar usuários', error)
     throw error;
   }
 };
@@ -41,6 +42,7 @@ export async function getUser(id_user) {
 
     return rows[0] || null;
   } catch (error) {
+    console.error('Erro ao buscar usuário', error)
     throw error;
   };
 };
