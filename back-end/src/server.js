@@ -6,7 +6,7 @@ import checkDatabaseConnection from "./service/dbCheck.js";
 import homeRoutes from "./routes/routes_home.js";
 import churchesRoutes from "./routes/routes_churches.js";
 import rolesRoutes from "./routes/routes_roles.js";
-import departamentsRoutes from "./routes/roules_departaments.js";
+import departamentsRoutes from "./routes/routes_departaments.js";
 
 
 dotenv.config();
